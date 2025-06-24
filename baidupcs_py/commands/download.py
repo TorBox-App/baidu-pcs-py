@@ -101,19 +101,6 @@ class Downloader(Enum):
 
         if returncode != 0:
             print(f"[italic]{self.value}[/italic] fails. return code: [red]{returncode}[/red]")
-        else:
-            if encrypt_password: # this will probably fail, just don't use this option
-                dio = to_decryptio(open(localpath, "rb"), encrypt_password) 
-                if isinstance(dio, DecryptIO):
-                    with open(localpath, "wb") as fd:
-                        while True:
-                            buf = dio.read(READ_SIZE)
-                            if not buf:
-                                break
-                            fd.write(buf)
-
-                    os.remove(localpath)
-                    return
 
     def spawn(self, cmd: List[str], quiet: bool = False):
         child = subprocess.run(cmd, stdout=subprocess.DEVNULL if quiet else None)
