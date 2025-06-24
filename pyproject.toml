@@ -50,6 +50,9 @@ ruff = ">=0.3"
 setuptools = ">=69.0"
 cython = ">=3.0"
 
+[tool.setuptools]
+packages = ["baidupcs_py"]
+
 [tool.poetry.build]
 script = "build.py"
 generate-setup-file = true
