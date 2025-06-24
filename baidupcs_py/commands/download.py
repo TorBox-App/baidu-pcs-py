@@ -72,33 +72,23 @@ class Downloader(Enum):
         if not self.which():
             self = DEFAULT_DOWNLOADER
 
-        localpath_tmp = localpath + ".tmp"
-
-        def done_callback(fut: Future):
-            err = fut.exception()
-            if not err:
-                shutil.move(localpath_tmp, localpath)
-            else:
-                logger.info("`download`: MeDownloader fails: error: %s", err)
-
         if self == Downloader.me:
             self._me_download(
                 url,
-                localpath_tmp,
+                localpath,
                 cookies=cookies,
                 downloadparams=downloadparams,
-                done_callback=done_callback,
                 encrypt_password=encrypt_password,
             )
             return
         elif self == Downloader.aget_py:
-            cmd = self._aget_py_cmd(url, localpath_tmp, cookies, downloadparams)
+            cmd = self._aget_py_cmd(url, localpath, cookies, downloadparams)
         elif self == Downloader.aget_rs:
-            cmd = self._aget_rs_cmd(url, localpath_tmp, cookies, downloadparams)
+            cmd = self._aget_rs_cmd(url, localpath, cookies, downloadparams)
         elif self == Downloader.aria2:
-            cmd = self._aria2_cmd(url, localpath_tmp, cookies, downloadparams)
+            cmd = self._aria2_cmd(url, localpath, cookies, downloadparams)
         else:
-            cmd = self._aget_py_cmd(url, localpath_tmp, cookies, downloadparams)
+            cmd = self._aget_py_cmd(url, localpath, cookies, downloadparams)
 
         # Print out command
         if out_cmd:
@@ -112,8 +102,8 @@ class Downloader(Enum):
         if returncode != 0:
             print(f"[italic]{self.value}[/italic] fails. return code: [red]{returncode}[/red]")
         else:
-            if encrypt_password:
-                dio = to_decryptio(open(localpath_tmp, "rb"), encrypt_password)
+            if encrypt_password: # this will probably fail, just don't use this option
+                dio = to_decryptio(open(localpath, "rb"), encrypt_password) 
                 if isinstance(dio, DecryptIO):
                     with open(localpath, "wb") as fd:
                         while True:
@@ -122,9 +112,8 @@ class Downloader(Enum):
                                 break
                             fd.write(buf)
 
-                    os.remove(localpath_tmp)
+                    os.remove(localpath)
                     return
-            shutil.move(localpath_tmp, localpath)
 
     def spawn(self, cmd: List[str], quiet: bool = False):
         child = subprocess.run(cmd, stdout=subprocess.DEVNULL if quiet else None)
